@@ -82,12 +82,20 @@ resource "aws_subnet" "app_subnet_1" {
   tags = { Name = "app-subnet-1-private" }
 }
 
-// --- 2. Elastic IP FOR NAT Gateway ---
+// --- Subnet Private 2 FOR EC2 (App Layer) AZ 1b ---
+resource "aws_subnet" "app_subnet_2" {
+  vpc_id            = aws_vpc.fgd3-vpc.id
+  cidr_block        = "10.10.40.0/24" 
+  availability_zone = "ap-southeast-1b"
+  tags = { Name = "app-subnet-2-private" }
+}
+
+// --- Elastic IP FOR NAT Gateway ---
 resource "aws_eip" "nat_eip" {
   domain = "vpc"
 }
 
-// --- 3. NAT Gateway  ---
+// ---  NAT Gateway  ---
 resource "aws_nat_gateway" "nat_gw" {
   allocation_id = aws_eip.nat_eip.id
   subnet_id     = aws_subnet.subnet-fgd3.id 
@@ -96,7 +104,7 @@ resource "aws_nat_gateway" "nat_gw" {
   depends_on = [aws_internet_gateway.igw-fgd3]
 }
 
-// --- 4. Route Table Only Private ---
+// --- Route Table Only Private ---
 resource "aws_route_table" "rt_private" {
   vpc_id = aws_vpc.fgd3-vpc.id
 
@@ -108,9 +116,15 @@ resource "aws_route_table" "rt_private" {
   tags = { Name = "rt-fgd3-private" }
 }
 
-// --- 5. Connecy App Subnet to Route Table Private ---
+// --- Connecy App Subnet to Route Table Private ---
 resource "aws_route_table_association" "assoc_app_rt" {
   subnet_id      = aws_subnet.app_subnet_1.id
+  route_table_id = aws_route_table.rt_private.id
+}
+
+// --- Connect App Subnet 2 to Route Table Private ---
+resource "aws_route_table_association" "assoc_app_rt_2" {
+  subnet_id      = aws_subnet.app_subnet_2.id
   route_table_id = aws_route_table.rt_private.id
 }
 

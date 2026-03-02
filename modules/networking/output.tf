@@ -17,3 +17,7 @@ output "public_subnet_ids" {
 output "app_subnet_id" {
   value = aws_subnet.app_subnet_1.id
 }
+
+output "app_subnet_id_2" {
+  value = aws_subnet.app_subnet_2.id
+}

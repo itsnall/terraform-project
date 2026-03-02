@@ -14,6 +14,7 @@ module "compute" {
   vpc_id            = module.networking.vpc_id
   public_subnet_ids = module.networking.public_subnet_ids
   app_subnet_id     = module.networking.app_subnet_id
+  app_subnet_id_2   = module.networking.app_subnet_id_2
   db_endpoint       = module.database.db_endpoint
 }
 

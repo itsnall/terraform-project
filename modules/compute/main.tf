@@ -121,7 +121,7 @@ resource "aws_autoscaling_group" "fgd3_asg" {
   name                = "fgd3-asg"
   
   
-  vpc_zone_identifier = [var.app_subnet_id] 
+  vpc_zone_identifier = [var.app_subnet_id, var.app_subnet_id_2] 
   
   
   target_group_arns   = [aws_lb_target_group.fgd3_tg.arn]
