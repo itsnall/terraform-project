@@ -116,7 +116,7 @@ resource "aws_route_table" "rt_private" {
   tags = { Name = "rt-fgd3-private" }
 }
 
-// --- Connecy App Subnet to Route Table Private ---
+// --- Connect App Subnet to Route Table Private ---
 resource "aws_route_table_association" "assoc_app_rt" {
   subnet_id      = aws_subnet.app_subnet_1.id
   route_table_id = aws_route_table.rt_private.id
@@ -133,14 +133,6 @@ resource "aws_network_acl" "fgd3-main-nacl" {
   vpc_id     = aws_vpc.fgd3-vpc.id
   subnet_ids = [aws_subnet.subnet-fgd3.id]
 
-  ingress {
-    protocol   = "tcp"
-    rule_no    = 100
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 22
-    to_port    = 22
-  }
 ingress {
     protocol   = "tcp"
     rule_no    = 130
