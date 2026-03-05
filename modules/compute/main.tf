@@ -18,6 +18,67 @@ resource "aws_launch_template" "fgd3_template" {
   }))
 }
 
+# --- Application Load Balancer ---
+resource "aws_lb" "fgd3_alb" {
+  name               = "fgd3-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb_sg.id]
+  subnets            = var.public_subnet_ids 
+
+  tags = { Name = "fgd3-alb" }
+}
+
+# --- Target Group ---
+resource "aws_lb_target_group" "fgd3_tg" {
+  name     = "fgd3-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = var.vpc_id
+
+  health_check {
+    path = "/"
+  }
+}
+
+# --- Listener ---
+resource "aws_lb_listener" "fgd3_listener" {
+  load_balancer_arn = aws_lb.fgd3_alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.fgd3_tg.arn
+  }
+}
+
+resource "aws_autoscaling_group" "fgd3_asg" {
+  name                = "fgd3-asg"
+  
+  
+  vpc_zone_identifier = [var.app_subnet_id, var.app_subnet_id_2] 
+  
+  
+  target_group_arns   = [aws_lb_target_group.fgd3_tg.arn]
+
+  
+  desired_capacity    = 2  
+  min_size            = 1  
+  max_size            = 3  
+
+  launch_template {
+    id      = aws_launch_template.fgd3_template.id
+    version = "$Latest"
+  }
+
+  tag {
+    key                 = "Name"
+    value               = "fgd3-asg-server"
+    propagate_at_launch = true
+  }
+}
+
 // Security Group EC2 (App Layer)
 resource "aws_security_group" "fgd3-vpc-sg" {
   name        = "fgd3-vpc-sg"
@@ -82,66 +143,7 @@ resource "aws_security_group" "alb_sg" {
   }
 }
 
-# --- Application Load Balancer ---
-resource "aws_lb" "fgd3_alb" {
-  name               = "fgd3-alb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = var.public_subnet_ids 
 
-  tags = { Name = "fgd3-alb" }
-}
-
-# --- Target Group ---
-resource "aws_lb_target_group" "fgd3_tg" {
-  name     = "fgd3-tg"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = var.vpc_id
-
-  health_check {
-    path = "/"
-  }
-}
-
-# --- Listener ---
-resource "aws_lb_listener" "fgd3_listener" {
-  load_balancer_arn = aws_lb.fgd3_alb.arn
-  port              = "80"
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.fgd3_tg.arn
-  }
-}
-
-resource "aws_autoscaling_group" "fgd3_asg" {
-  name                = "fgd3-asg"
-  
-  
-  vpc_zone_identifier = [var.app_subnet_id, var.app_subnet_id_2] 
-  
-  
-  target_group_arns   = [aws_lb_target_group.fgd3_tg.arn]
-
-  
-  desired_capacity    = 2  
-  min_size            = 1  
-  max_size            = 3  
-
-  launch_template {
-    id      = aws_launch_template.fgd3_template.id
-    version = "$Latest"
-  }
-
-  tag {
-    key                 = "Name"
-    value               = "fgd3-asg-server"
-    propagate_at_launch = true
-  }
-}
 
 
 //AWS SSM 
